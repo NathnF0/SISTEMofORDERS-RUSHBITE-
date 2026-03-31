@@ -62,7 +62,7 @@ Native Modules: os, json, datetime
 Clone the repository:
 
 Bash
-git clone [https://github.com/NathnF0/SISTEMofORDERS-RUSHBITE-.git](https://github.com/NathnF0/SISTEMofORDERS-RUSHBITE-.git)
+git clone [[https://github.com/NathnF0/RUSHBITE.git] (https://github.com/NathnF0/RUSHBITE.git)]
 Navigate to the folder:
 
 Bash
