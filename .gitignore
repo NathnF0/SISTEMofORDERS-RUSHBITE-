@@ -1,0 +1,16 @@
+# Python (Arquivos de compilação)
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambientes virtuais (Caso você use no futuro)
+venv/
+env/
+
+# Windows (Arquivos de miniatura e sistema)
+Thumbs.db
+desktop.ini
+
+# Notas pessoais (Aquela pasta que combinamos para seus rascunhos)
+notas_pessoais/
+Patchs_notes.txt
