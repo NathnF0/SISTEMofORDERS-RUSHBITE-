@@ -1,0 +1,21 @@
+[
+    {
+        "data": "02/04/2026 09:34",
+        "loja": "O REi Do Smash",
+        "itens": [
+            [
+                "Smash \"Heroi\"",
+                2
+            ],
+            [
+                "Smash \"Eagle\" ",
+                1
+            ],
+            [
+                "Smash \"O Cavaleiro\"",
+                2
+            ]
+        ],
+        "total": 128.0
+    }
+]
