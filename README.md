@@ -56,13 +56,13 @@ Execute o sistema:
 Bash
 python main.py
 <div align="center">
-Desenvolvido com ☕ e 🐍 por <b>Galaxy</b>
+Desenvolvido com ☕ e 🐍 por <b>NATHAN</b>
 </div>
 
 
 -----
 
-### 💡 Dicas de Ajuste para o Galaxy:
+### 💡 Dicas de Ajuste para o Nathn:
 
 1.  **Link do LinkedIn:** Ali onde está `https://www.linkedin.com/in/SEU-PERFIL-AQUI`, você precisa colocar o link real do seu perfil para o botão funcionar.
 2.  **Imagens:** Se você tirar um print do menu colorido que a gente fez e salvar na pasta do projeto, você pode adicionar no README usando `![Preview](./print.png)`. Isso chama muita atenção\!
