@@ -1,105 +1,110 @@
-from src.utils import GREEN, RED, YELLOW, RESET, BOLD, ITALIC, ler_float, exibir_cabecalho, pausar
-from src.database import salvar_empresas
+from src.utils import exibir_cabecalho, GREEN, RED, RESET, BOLD, YELLOW, CYAN, pausar, ler_float
+from src.database import carregar_dados, salvar_dados, ler_todos_pedidos, atualizar_status_pedido
 
-def rodar_menu_empresa(empresas):
+def menu_empresa(nome_loja):
     while True:
-        exibir_cabecalho("🏢 MODO EMPRESA - ACESSO")
-        print("1 - Fazer Login")
-        print("2 - Criar Nova Loja")
-        print("0 - Voltar ao Menu Principal")
+        dados = carregar_dados()
+        loja = dados[nome_loja]
         
-        escolha = input(f"\n{BOLD}Escolha: {RESET}")
+        exibir_cabecalho(f"Painel Administrativo: {nome_loja}")
+        print(f"{CYAN}--- GESTÃO ---{RESET}")
+        print("1. Gerenciar Cardápio")
+        print("2. Ver Pedidos Recebidos")
+        print("3. Relatório de Faturamento")
+        print(f"\n{CYAN}--- CONFIGURAÇÕES ---{RESET}")
+        print("4. Editar Perfil (Logo, Descrição, Horário)")
+        print("5. Configurar Entrega e PIX")
+        print(f"\n{RED}0. Sair do Painel{RESET}")
+        
+        op = input("\nEscolha uma opção: ")
 
-        if escolha == "1":
-            exibir_cabecalho("🔐 LOGIN DE EMPRESA")
-            nome = input("Nome da empresa: ").strip()
-            senha = input("Senha: ").strip()
-            
-            if nome in empresas and empresas[nome]["senha"] == senha:
-                print(f"\n{GREEN}✅ Login realizado com sucesso!{RESET}")
-                pausar()
-                
-                # --- PAINEL INTERNO DA EMPRESA ---
-                while True:
-                    exibir_cabecalho(f"🏪 PAINEL: {nome.upper()}")
-                    status = f"{GREEN}Publicada{RESET}" if empresas[nome].get("publicada") else f"{RED}Privada{RESET}"
-                    print(f"Status Atual: {status}")
-                    print("-" * 30)
-                    print("1 - Adicionar Produto")
-                    print("2 - Ver Meus Produtos")
-                    print("3 - Personalizar Loja (Categoria/Logo)")
-                    print("4 - Publicar/Ocultar Loja")
-                    print("0 - Sair do Painel")
-                    
-                    op = input(f"\n{BOLD}Escolha: {RESET}")
-                    
-                    if op == "1":
-                        exibir_cabecalho("➕ ADICIONAR PRODUTO")
-                        p = input("Nome do Produto: ")
-                        v = ler_float("Preço (R$): ")
-                        empresas[nome]["produtos"][p] = v
-                        salvar_empresas(empresas)
-                        print(f"\n{GREEN}✅ Produto '{p}' adicionado!{RESET}")
-                        pausar()
-                        
-                    elif op == "2":
-                        exibir_cabecalho("📋 MEUS PRODUTOS")
-                        produtos = empresas[nome]["produtos"]
-                        if not produtos:
-                            print(f"{YELLOW}Você ainda não tem produtos cadastrados.{RESET}")
-                        else:
-                            for i, (p, v) in enumerate(produtos.items(), 1):
-                                print(f"{i}. {p.ljust(20)} - {YELLOW}R${v:.2f}{RESET}")
-                        pausar()
-                        
-                    elif op == "3":
-                        exibir_cabecalho("🎨 PERSONALIZAR LOJA")
-                        d = empresas[nome]
-                        print(f"{ITALIC}Deixe em branco para manter o atual.{RESET}\n")
-                        
-                        nova_cat = input(f"Categoria atual [{d.get('categoria', 'N/A')}]: ")
-                        if nova_cat: empresas[nome]["categoria"] = nova_cat
-                        
-                        novo_logo = input(f"Logo/Emoji atual [{d.get('logo', '🍔')}]: ")
-                        if novo_logo: empresas[nome]["logo"] = novo_logo
-                        
-                        salvar_empresas(empresas)
-                        print(f"\n{GREEN}✅ Alterações salvas!{RESET}")
-                        pausar()
-                        
-                    elif op == "4":
-                        atual = empresas[nome].get("publicada", False)
-                        empresas[nome]["publicada"] = not atual
-                        salvar_empresas(empresas)
-                        status_msg = "PUBLICADA" if not atual else "OCULTADA"
-                        print(f"\n{YELLOW}📢 Sua loja agora está {status_msg}!{RESET}")
-                        pausar()
-                        
-                    elif op == "0":
-                        break
-            else:
-                print(f"\n{RED}❌ Erro: Nome ou senha incorretos.{RESET}")
-                pausar()
-
-        elif escolha == "2":
-            exibir_cabecalho("📝 CRIAR NOVA LOJA")
-            nome = input("Nome da nova empresa: ").strip()
-            if nome in empresas:
-                print(f"\n{RED}❌ Erro: Este nome já está em uso.{RESET}")
-                pausar()
-                continue
-                
-            senha = input("Crie uma senha: ")
-            empresas[nome] = {
-                "senha": senha, 
-                "produtos": {}, 
-                "publicada": False,
-                "categoria": "Geral",
-                "logo": "🏪"
-            }
-            salvar_empresas(empresas)
-            print(f"\n{GREEN}✅ Loja criada! Agora faça o login para gerenciar.{RESET}")
-            pausar()
-
-        elif escolha == "0":
+        if op == "1":
+            gerenciar_cardapio(nome_loja, dados)
+        elif op == "2":
+            gerenciar_pedidos(nome_loja)
+        elif op == "3":
+            exibir_faturamento(nome_loja)
+        elif op == "4":
+            personalizar_loja(nome_loja, dados)
+        elif op == "5":
+            configurar_pagamento(nome_loja, dados)
+        elif op == "0":
             break
+
+def personalizar_loja(nome, dados):
+    loja = dados[nome]
+    exibir_cabecalho(f"Personalizar: {nome}")
+    print(f"Logo atual: {loja.get('logo', 'Sem logo')}")
+    print(f"Descrição: {loja.get('descricao', 'Sem descrição')}")
+    print(f"Horário: {loja.get('horario', 'Não definido')}")
+    print("-" * 20)
+    
+    loja['logo'] = input("Nova Logo (Ex: 🍕): ")
+    loja['descricao'] = input("Descrição da Loja: ")
+    loja['horario'] = input("Horário de Funcionamento (Ex: 18h às 23h): ")
+    
+    salvar_dados(dados)
+    print(f"\n{GREEN}✅ Perfil atualizado com sucesso!{RESET}")
+    pausar()
+
+def gerenciar_cardapio(nome, dados):
+    loja = dados[nome]
+    exibir_cabecalho("Gerenciar Cardápio")
+    print("1. Adicionar/Editar Produto")
+    print("2. Listar Produtos")
+    print("0. Voltar")
+    esc = input("\nOpção: ")
+    if esc == "1":
+        n = input("Nome do Produto: ")
+        p = ler_float("Preço: R$ ")
+        loja['produtos'][n] = p
+        salvar_dados(dados)
+        print(f"✅ {n} atualizado!")
+    elif esc == "2":
+        for p, v in loja['produtos'].items():
+            print(f"- {p}: R$ {v:.2f}")
+    pausar()
+
+def configurar_pagamento(nome, dados):
+    loja = dados[nome]
+    exibir_cabecalho("Configurações de Venda")
+    loja['taxa_entrega'] = ler_float("Taxa de Entrega: R$ ")
+    loja['chave_pix'] = input("Sua Chave PIX: ")
+    salvar_dados(dados)
+    print(f"{GREEN}✅ Dados salvos!{RESET}")
+    pausar()
+
+def exibir_faturamento(nome_loja):
+    pedidos = [p for p in ler_todos_pedidos() if p['loja'] == nome_loja and p['status'] == "Entregue"]
+    total = sum(p['total'] for p in pedidos)
+    exibir_cabecalho("Financeiro")
+    print(f"Vendas Concluídas: {len(pedidos)}")
+    print(f"Total Faturado: {GREEN}R$ {total:.2f}{RESET}")
+    pausar()
+
+def gerenciar_pedidos(nome_loja):
+    while True:
+        exibir_cabecalho(f"Pedidos de {nome_loja}")
+        meus = [p for p in ler_todos_pedidos() if p['loja'] == nome_loja]
+        
+        if not meus:
+            print("Nenhum pedido hoje."); pausar(); break
+            
+        for i, p in enumerate(meus, 1):
+            cor = GREEN if p['status'] == "Entregue" else YELLOW
+            print(f"{i}. {p['id']} | Status: {cor}{p['status']}{RESET} | R$ {p['total']:.2f}")
+        
+        esc = input("\nVer detalhes (nº) ou 0 para sair: ")
+        if esc == "0": break
+        try:
+            p = meus[int(esc)-1]
+            exibir_cabecalho(f"Detalhes: {p['id']}")
+            print(f"Itens: {', '.join(p['itens'])}")
+            print(f"Pagamento: {p['pagamento']}")
+            print(f"Tipo: {p['tipo_entrega']}")
+            print(f"Endereço: {p['endereco']}")
+            print("\n1-Preparando 2-Saiu para Entrega 3-Entregue 4-Cancelar")
+            acao = input("Mudar status: ")
+            m = {"1":"Preparando", "2":"Saiu para Entrega", "3":"Entregue", "4":"Cancelado"}
+            if acao in m: atualizar_status_pedido(p['id'], m[acao])
+        except: pass

@@ -1,36 +1,55 @@
-from src.database import carregar_empresas
-from src.telas.cliente import rodar_menu_cliente
-from src.telas.empresa import rodar_menu_empresa
-from src.utils import exibir_cabecalho, GREEN, RED, RESET, BOLD
+from src.utils import exibir_cabecalho, GREEN, RED, RESET, pausar
+from src.database import carregar_dados, salvar_dados
+from src.telas.empresa import menu_empresa
+from src.telas.cliente import menu_cliente
 
 def main():
-    # 1. Carrega os dados (já com as empresas Premium que definimos)
-    empresas = carregar_empresas()
-    
     while True:
-        # 2. Exibe o menu principal com limpeza de tela automática
-        exibir_cabecalho("🍔 RUSHBITE - DELIVERY SYSTEM 🍟")
+        exibir_cabecalho("RushBite - Sistema de Delivery")
+        print("1 - Entrar como Cliente")
+        print("2 - Painel da Empresa (Login)")
+        print("3 - Cadastrar Nova Empresa")
+        print("0 - Sair")
         
-        print(f"{BOLD}Como deseja acessar o sistema?{RESET}")
-        print("\n1 - Sou Cliente (Fazer Pedido)")
-        print("2 - Sou Empresa (Gerenciar Loja)")
-        print(f"{RED}0 - Sair do Programa{RESET}")
-        
-        opcao = input(f"\n{BOLD}Opção: {RESET}")
-        
+        opcao = input("\nEscolha: ")
+
         if opcao == "1":
-            rodar_menu_cliente(empresas)
+            menu_cliente()
+        
         elif opcao == "2":
-            rodar_menu_empresa(empresas)
+            nome = input("Nome da Empresa: ")
+            senha = input("Senha: ")
+            dados = carregar_dados()
+            
+            if nome in dados and dados[nome].get('senha') == senha:
+                menu_empresa(nome)
+            else:
+                print(f"{RED}Login inválido! Verifique nome e senha.{RESET}")
+                pausar()
+
+        elif opcao == "3":
+            exibir_cabecalho("Cadastro de Parceiro")
+            nome = input("Nome da Loja: ")
+            dados = carregar_dados()
+            
+            if nome in dados:
+                print(f"{RED}Empresa já cadastrada!{RESET}")
+            else:
+                categoria = input("Categoria (ex: Lanches): ")
+                senha_nova = input("Crie uma senha: ")
+                dados[nome] = {
+                    "categoria": categoria,
+                    "senha": senha_nova,
+                    "produtos": {},
+                    "taxa_entrega": 0.0,
+                    "chave_pix": "Não cadastrada"
+                }
+                salvar_dados(dados)
+                print(f"{GREEN}✅ Empresa cadastrada com sucesso!{RESET}")
+            pausar()
+
         elif opcao == "0":
-            # Limpa antes de sair para deixar o terminal do usuário organizado
-            exibir_cabecalho("ATÉ LOGO!")
-            print(f"{GREEN}Obrigado por usar o RushBite. Boas vendas!{RESET}\n")
             break
-        else:
-            print(f"\n{RED}❌ Opção inválida! Tente novamente.{RESET}")
-            # Um pequeno delay ou input aqui para o usuário ler o erro antes de limpar
-            input("\nPressione Enter para continuar...")
 
 if __name__ == "__main__":
     main()

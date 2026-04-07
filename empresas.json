@@ -1,0 +1,16 @@
+{
+    "TestHive": {
+        "categoria": "Hambuguers",
+        "senha": "testrb",
+        "produtos": {
+            "Cheese": 35.99,
+            "Supreme Chicken": 49.99,
+            "O REI": 78.99
+        },
+        "logo": "🍔",
+        "descricao": "(TESTE) Loja Completa com Pedidos e entregas Rapidas diretamente á você",
+        "horario": "17h às 00h",
+        "taxa_entrega": 4.99,
+        "chave_pix": "3183641438"
+    }
+}

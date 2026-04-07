@@ -2,8 +2,6 @@
 __pycache__/
 *.py[cod]
 *$py.class
-*.json
-__pycache__/
 
 # Ambientes virtuais (Caso você use no futuro)
 venv/
