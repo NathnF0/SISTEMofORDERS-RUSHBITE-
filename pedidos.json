@@ -18,21 +18,59 @@
         "status": "Entregue"
     },
     {
-        "id": "#3AE6",
-        "data": "07/04/2026 10:19",
+        "id": "#MALB",
+        "cliente": "Lucas Henrique",
+        "data": "07/04 10:35",
         "loja": "TestHive",
         "itens": [
             "Cheese",
             "Supreme Chicken",
             "O REI",
-            "Cheese",
-            "O REI"
+            "Cheese"
         ],
-        "total": 256.446,
-        "tipo_entrega": "Entrega",
-        "endereco": "Rua desembarcador, 19 lote 1 quadra B, Parque imperio",
-        "pagamento": "Dinheiro",
-        "troco_para": 300.0,
+        "total": 180.864,
+        "tipo_entrega": "Retirada",
+        "endereco": "Retirada na Loja",
+        "pagamento": "Cartão",
         "status": "Entregue"
+    },
+    {
+        "id": "#7YA6",
+        "cliente": "Lucas Henrique",
+        "telefone_cliente": "66 98239303",
+        "data": "07/04/2026 10:57",
+        "loja": "TestHive",
+        "itens": [
+            "Cheese"
+        ],
+        "total": 40.980000000000004,
+        "tipo_entrega": "Entrega",
+        "endereco": "Rua jardim anapolis, 67 lote 19 quadra C, Parque Columbia",
+        "pagamento": "Cartão",
+        "status": "Entregue",
+        "historico_chat": [
+            "Sistema: Pedido realizado com sucesso via Entrega.",
+            "Loja: O status mudou para Entregue"
+        ]
+    },
+    {
+        "id": "#S9DH",
+        "cliente": "Estefani",
+        "data": "11:19",
+        "loja": "TestHive",
+        "itens": [
+            "Cheese",
+            "Supreme Chicken",
+            "O REI",
+            "Coca-Cola 350ml",
+            "batata fritas"
+        ],
+        "total": 158.368,
+        "tipo_entrega": "Entrega",
+        "endereco": "Rua Desembargador, nº122, Jardim bonito, (No apartamento CLAUDE)",
+        "status": "Pendente",
+        "historico_chat": [
+            "Sistema: Pedido enviado!"
+        ]
     }
 ]

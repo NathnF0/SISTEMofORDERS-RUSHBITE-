@@ -5,12 +5,19 @@
         "produtos": {
             "Cheese": 35.99,
             "Supreme Chicken": 49.99,
-            "O REI": 78.99
+            "O REI": 78.99,
+            "Suco Da Casa": 19.99,
+            "Coca-Cola 350ml": 8.0,
+            "batata fritas": 20.0
         },
-        "logo": "🍔",
-        "descricao": "(TESTE) Loja Completa com Pedidos e entregas Rapidas diretamente á você",
-        "horario": "17h às 00h",
         "taxa_entrega": 4.99,
-        "chave_pix": "3183641438"
+        "chave_pix": "25962986208",
+        "logo": "🍔🍔",
+        "descricao": "Loja (teste) Hambuguers quentinhos, Prontos para chegar ate você em um instante!",
+        "horario": "17h às 00h",
+        "telefone_suporte": "21948484934",
+        "aceita_cupom_rush": true,
+        "cupom_id": "HIVE",
+        "cupom_desc": 20.0
     }
 }
