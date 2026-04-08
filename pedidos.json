@@ -68,9 +68,75 @@
         "total": 158.368,
         "tipo_entrega": "Entrega",
         "endereco": "Rua Desembargador, nº122, Jardim bonito, (No apartamento CLAUDE)",
-        "status": "Pendente",
+        "status": "Entregue",
         "historico_chat": [
-            "Sistema: Pedido enviado!"
+            "Sistema: Pedido enviado!",
+            "Sistema: Pedido atualizado para Entregue",
+            "Cliente avaliou com 5⭐"
+        ]
+    },
+    {
+        "id": "#TUKZ",
+        "cliente": "Lucas Henrique",
+        "data": "09:17",
+        "loja": "TestHive",
+        "itens": [
+            "Cheese",
+            "O REI",
+            "Coca-Cola 350ml"
+        ],
+        "total": 115.17299999999999,
+        "tipo_entrega": "Entrega",
+        "endereco": "Rua jardim anapolis, 67 lote 19 quadra C, Parque Columbia",
+        "status": "Cancelado",
+        "historico_chat": [
+            "Sistema: Pedido enviado!",
+            "Sistema: Pedido atualizado para Cancelado",
+            "Loja: PEDIDO CANCELADO, ITENS INDISPONIVEIS"
+        ]
+    },
+    {
+        "id": "#7QQ6",
+        "cliente": "Lucas Henrique",
+        "data": "09:28",
+        "loja": "TestHive",
+        "itens": [
+            "Cheese",
+            "Supreme Chicken",
+            "Suco Da Casa",
+            "Coca-Cola 350ml"
+        ],
+        "total": 107.064,
+        "tipo_entrega": "Entrega",
+        "endereco": "Rua jardim anapolis, 67 lote 19 quadra C, Parque Columbia",
+        "status": "Cancelado",
+        "historico_chat": [
+            "Sistema: Pedido enviado!",
+            "Sistema: Pedido atualizado para Cancelado"
+        ]
+    },
+    {
+        "id": "#DM1V",
+        "cliente": "Estefani",
+        "data": "09:49",
+        "loja": "TestHive",
+        "itens": [
+            "Cheese",
+            "Supreme Chicken",
+            "O REI",
+            "Coca-Cola 350ml"
+        ],
+        "total": 103.176,
+        "tipo_entrega": "Entrega",
+        "endereco": "Rua Desembargador, nº122, Jardim bonito, (No apartamento CLAUDE)",
+        "status": "Entregue",
+        "historico_chat": [
+            "Sistema: Pedido enviado!",
+            "Cliente: Retirar cebolas",
+            "Sistema: Pedido atualizado para Saiu para Entrega",
+            "Loja: OK",
+            "Sistema: Pedido atualizado para Entregue",
+            "Cliente avaliou com 5⭐"
         ]
     }
 ]
