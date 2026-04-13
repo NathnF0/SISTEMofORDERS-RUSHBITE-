@@ -5,241 +5,294 @@ from src.database import carregar_dados, salvar_dados, ler_todos_pedidos, atuali
 def menu_empresa(nome_loja):
     while True:
         dados = carregar_dados()
-        if nome_loja not in dados:
-            print(f"{RED}Erro: Loja não encontrada!{RESET}")
-            break
-            
-        loja = dados[nome_loja]
-        
-        # Garantia de campos obrigatórios
-        if 'aceita_cupom_rush' not in loja:
-            loja['aceita_cupom_rush'] = True
-            salvar_dados(dados)
+        loja = dados.get(nome_loja)
+        if not loja: break
 
-        exibir_cabecalho(f"PAINEL ADMINISTRATIVO: {nome_loja}")
+        # --- NOVO: RESUMO DE STATUS NO TOPO ---
+        pedidos_todos = ler_todos_pedidos()
+        pedidos_loja = [p for p in pedidos_todos if p.get('loja') == nome_loja]
+        pendentes = [p for p in pedidos_loja if p.get('status') == "Pendente"]
+        em_preparo = [p for p in pedidos_loja if p.get('status') == "Preparando"]
+
+        exibir_cabecalho(f"PAINEL: {nome_loja.upper()}")
         
-        print(f"{CYAN}{BOLD}📂 GESTÃO DE OPERAÇÕES{RESET}")
-        print(f"  [1] 🍴 Gerenciar Cardápio & Estoque")
-        print(f"  [2] 📦 Pedidos Recebidos (Fila)")
-        print("-" * 40)
+        # Alerta visual se houver trabalho
+        if pendentes:
+            print(f" {RED}🔔 {len(pendentes)} PEDIDOS AGUARDANDO ACEITAÇÃO!{RESET}")
+        if em_preparo:
+            print(f" {YELLOW}⏳ {len(em_preparo)} pedidos em preparo...{RESET}")
+        if not pendentes and not em_preparo:
+            print(f" {GREEN}✅ Tudo em dia por aqui!{RESET}")
         
-        print(f"{GREEN}{BOLD}💰 INTELIGÊNCIA FINANCEIRA{RESET}")
-        print(f"  [3] 📊 Dashboard de Faturamento")
-        print(f"  [4] 🎟️  Meus Cupons Próprios")
+        print("-" * 35)
+
+        # --- BLOCO 1: OPERAÇÃO ---
+        status_loja = f"{GREEN}ABERTA{RESET}" if loja.get('aberta', True) else f"{RED}FECHADA{RESET}"
+        print(f"{CYAN}📂 OPERAÇÃO{RESET} | Status: {status_loja}")
+        print(f" [{BOLD}1{RESET}] 🍴 Cardápio & Estoque")
+        print(f" [{BOLD}2{RESET}] 📦 Fila de Pedidos")
+        print(f" [{BOLD}7{RESET}] {'🔴 Fechar' if loja.get('aberta', True) else '🟢 Abrir'} Loja")
+        print("-" * 35)
         
-        status_rush = f"{GREEN}ATIVO{RESET}" if loja.get('aceita_cupom_rush') else f"{RED}INATIVO{RESET}"
-        print(f"  [5] 🌐 Parceria RushBite: {status_rush}")
-        print("-" * 40)
+
+        # --- BLOCO 2: INTELIGÊNCIA & LUCRO ---
+        print(f"{CYAN}📊 ESTATÍSTICAS{RESET}")
+        print(f" [{BOLD}3{RESET}] 🏆 Performance & Ranking")
+        print(f" [{BOLD}4{RESET}] 💰 Financeiro (Lucros)")
+        print("-" * 35)
+
+        # --- BLOCO 3: PARCERIA & MARKETING ---
+        status_parceria = f"{GREEN}ATIVADA{RESET}" if loja.get('aceita_cupom_rush', True) else f"{RED}DESATIVADA{RESET}"
+        print(f"{CYAN}🤝 RUSHBITE PARTNER{RESET}")
+        print(f" [{BOLD}5{RESET}] 🎟️  Meus Cupons")
+        print(f" [{BOLD}6{RESET}] Parceria RushBite: {status_parceria}")
+        print("-" * 35)
+
+        print(f" [{RED}0{RESET}] ⬅️  Sair para o Menu Principal")
         
-        print(f"{YELLOW}{BOLD}⚙️  CONFIGURAÇÕES DA LOJA{RESET}")
-        print(f"  [6] 🎨 Personalizar Perfil Visual")
-        print(f"  [7] 📞 Contato e Chave PIX")
-        print("-" * 40)
-        
-        print(f"{RED}[0] ⬅️  Sair do Sistema{RESET}")
-        
-        op = input(f"\n{BOLD}Selecione uma opção: {RESET}")
+        op = input(f"\n{BOLD}Escolha: {RESET}").strip()
         
         if op == "1": gerenciar_cardapio(nome_loja, dados)
         elif op == "2": gerenciar_pedidos_v2(nome_loja)
-        elif op == "3": exibir_financeiro_detalhado(nome_loja)
-        elif op == "4": gerenciar_marketing(nome_loja, dados)
-        elif op == "5": 
-            loja['aceita_cupom_rush'] = not loja.get('aceita_cupom_rush')
+        elif op == "3": exibir_performance_ranking(nome_loja)
+        elif op == "4": exibir_financeiro_lucro(nome_loja)
+        elif op == "5": gerenciar_marketing(nome_loja, dados)
+        elif op == "6": 
+            if not loja.get('aceita_cupom_rush', False):
+                exibir_contrato_parceria(nome_loja, dados)
+            else:
+                # Se já for parceiro, dá a opção de rescindir
+                print(f"\n{RED}Atenção: Você já é um Parceiro RushBite.{RESET}")
+                if input("Deseja rescindir o contrato e desativar cupons da plataforma? (S/N): ").lower() == 's':
+                    loja['aceita_cupom_rush'] = False
+                    salvar_dados(dados)
+                    print(f"{YELLOW}Parceria encerrada.{RESET}"); pausar()
+        elif op == "7":
+            loja['aberta'] = not loja.get('aberta', True)
             salvar_dados(dados)
-            print(f"\n{GREEN}✓ Status de parceria atualizado!{RESET}")
-            pausar()
-        elif op == "6": personalizar_loja_inteligente(nome_loja, dados)
-        elif op == "7": configurar_contato_pagamento(nome_loja, dados)
+            print(f"{YELLOW}Loja {'aberta' if loja['aberta'] else 'fechada'}.{RESET}"); pausar()            
+        elif op == "0": break            
+
+def gerenciar_cardapio(nome, dados):
+    while True:
+        exibir_cabecalho("CARDÁPIO & ESTOQUE")
+        loja = dados[nome]
+        prods = loja.setdefault('produtos', {})
+        estoque = loja.setdefault('estoque', {})
+
+        for cat, itens in prods.items():
+            print(f"\n{CYAN}📂 {cat.upper()}{RESET}")
+            for p, v in itens.items():
+                qtd = estoque.get(p, "∞")
+                print(f"  • {p:<20} | R$ {v:>6.2f} | Est: {qtd}")
+        
+        print("\n[1] Add Item [2] Remover [3] Ajustar Estoque [0] Voltar")
+        op = input("Ação: ")
+        if op == "1":
+            cat = input("Categoria: ").capitalize() or "Geral"
+            n = input("Nome: ")
+            v = ler_float("Preço: ")
+            prods.setdefault(cat, {})[n] = v
+            if n not in estoque: estoque[n] = "∞"
+            salvar_dados(dados); pausar()
+        elif op == "2":
+            cat = input("Categoria: ").capitalize()
+            n = input("Nome: ")
+            if cat in prods and n in prods[cat]:
+                del prods[cat][n]
+                estoque.pop(n, None)
+                salvar_dados(dados)
+        elif op == "3":
+            n = input("Nome do item: ")
+            qtd = input("Quantidade (vazio = ∞): ")
+            estoque[n] = int(qtd) if qtd.isdigit() else "∞"
+            salvar_dados(dados)
         elif op == "0": break
 
 def gerenciar_pedidos_v2(nome_loja):
     while True:
-        exibir_cabecalho(f"FILA DE PEDIDOS - {nome_loja}")
-        pedidos_totais = ler_todos_pedidos()
+        exibir_cabecalho("PEDIDOS RECEBIDOS")
+        # Busca todos os pedidos e filtra os desta loja
+        todos = ler_todos_pedidos()
+        pedidos = [p for p in todos if p.get('loja') == nome_loja]
         
-        meus = [p for p in pedidos_totais if p.get('loja') == nome_loja]
-        
-        if not meus:
-            print(f"{YELLOW}Nenhum pedido na fila no momento.{RESET}")
+        if not pedidos:
+            print(f"\n{YELLOW}Nenhum pedido na fila no momento.{RESET}")
             pausar(); break
             
-        print(f"{BOLD}{'Nº':<3} | {'ID':<7} | {'CLIENTE':<15} | {'STATUS':<15}{RESET}")
-        print("-" * 45)
-        
+        # Mostra os 10 mais recentes (do último para o primeiro)
+        meus = list(reversed(pedidos))[:10]
         for i, p in enumerate(meus, 1):
             st = p.get('status', 'Pendente')
-            cor = GREEN if st in ["Entregue", "Finalizado", "Pronto p/ Retirada"] else YELLOW
-            nome_c = str(p.get('cliente', 'S/N'))[:15]
-            print(f"{i:<3} | {p.get('id', '???'):<7} | {nome_c:<15} | {cor}{st:<15}{RESET}")
+            cor = GREEN if st in ["Entregue", "Finalizado"] else YELLOW
+            # Proteção caso o ID ou Cliente não existam no dicionário
+            p_id = p.get('id', 'N/A')
+            p_cli = p.get('cliente', 'Desconhecido')[:10]
+            print(f"{BOLD}[{i}]{RESET} {p_id} | {p_cli:<10} | {cor}{st}{RESET}")
+            
+        esc = input(f"\n{CYAN}[nº]{RESET} Detalhes | {RED}[0]{RESET} Voltar: ").strip()
+        if esc == "0": break
         
-        print(f"\n{CYAN}[nº]{RESET} Ver Detalhes | {CYAN}[c + nº]{RESET} Chat Rápido | {RED}[0]{RESET} Voltar")
-        esc = input("\nAção: ").lower().strip()
-        
-        if esc == "0" or not esc: break
-        
-        if esc.startswith('c'):
-            try:
-                idx = int(esc[1:]) - 1
-                p = meus[idx]
-                msg = input(f"\n{BOLD}Mensagem para {p.get('cliente')}:{RESET} ")
-                if msg:
-                    atualizar_status_pedido(p['id'], p.get('status'), f"Loja: {msg}")
-                    print(f"{GREEN}✓ Mensagem enviada!{RESET}"); pausar()
-                continue
-            except: 
-                print(f"{RED}Erro ao abrir chat.{RESET}"); pausar(); continue
-
-        try:
-            p = meus[int(esc)-1]
-            detalhar_pedido_empresa(p)
-        except:
-            print(f"{RED}Opção inválida.{RESET}"); pausar()
+        # Validação robusta da escolha
+        if esc.isdigit():
+            idx = int(esc) - 1
+            if 0 <= idx < len(meus):
+                detalhar_pedido_empresa(meus[idx])
+            else:
+                print(f"{RED}Número fora da lista!{RESET}"); pausar()
+        else:
+            print(f"{RED}Digite apenas números!{RESET}"); pausar()
 
 def detalhar_pedido_empresa(p):
     while True:
-        exibir_cabecalho(f"DETALHES DO PEDIDO: {p.get('id')}")
-        print(f"{BOLD}Cliente:{RESET} {p.get('cliente')}")
-        print(f"{BOLD}Endereço:{RESET} {YELLOW}{p.get('endereco', 'Não informado')}{RESET}")
-        print(f"{BOLD}Itens:{RESET} {YELLOW}{', '.join(p.get('itens', []))}{RESET}")
-        print(f"{BOLD}Total:{RESET} {GREEN}R$ {p.get('total', 0):.2f}{RESET}")
-        print(f"{BOLD}Tipo:{RESET} {p.get('tipo_entrega', 'Entrega')}")
-        print("-" * 40)
+        exibir_cabecalho(f"DETALHES: {p.get('id', 'S/ID')}")
+        print(f"Cliente: {p.get('cliente', 'N/A')} | Status: {YELLOW}{p.get('status', 'Pendente')}{RESET}")
+        print(f"Endereço: {p.get('endereco', 'N/A')}")
         
-        # --- NOVO: VISUALIZAÇÃO DO CHAT NOS DETALHES ---
-        print(f"{CYAN}💬 HISTÓRICO DE CHAT:{RESET}")
-        historico = p.get('historico_chat', [])
-        if not historico:
-            print(" > Nenhuma mensagem registrada.")
-        for msg in historico:
-            print(f" > {msg}")
-        print("-" * 40)
+        # Garante que itens seja uma lista para o join não quebrar
+        itens = p.get('itens', [])
+        print(f"Itens: {', '.join(itens) if itens else 'Nenhum item'}")
+        print("-" * 35)
         
-        print(f"{CYAN}[S]{RESET} Mudar Status | {CYAN}[C]{RESET} Responder Chat | {CYAN}[I]{RESET} Comanda | {RED}[0]{RESET} Voltar")
-        acao = input("\nAção: ").lower()
-
+        acao = input(f"{CYAN}[S]{RESET} Mudar Status | {CYAN}[C]{RESET} Chat | {RED}[0]{RESET} Voltar: ").lower().strip()
+        
         if acao == "0": break
-        
         elif acao == "c":
-            msg = input(f"\n{BOLD}Resposta para {p.get('cliente')}:{RESET} ")
+            msg = input("Resposta para o cliente: ")
             if msg:
-                atualizar_status_pedido(p['id'], p.get('status'), f"Loja: {msg}")
-                # Atualiza localmente para a empresa ver na tela atual
-                p.setdefault('historico_chat', []).append(f"Loja: {msg}")
-                print(f"{GREEN}✓ Mensagem enviada!{RESET}"); pausar()
-
-        elif acao == "i":
-            gerar_comanda_txt(p)
-
+                if atualizar_status_pedido(p['id'], p['status'], f"Loja: {msg}"):
+                    p.setdefault('historico_chat', []).append(f"Loja: {msg}")
+                    print(f"{GREEN}Mensagem enviada!{RESET}")
         elif acao == "s":
-            tipo = p.get('tipo_entrega', 'Entrega')
-            if tipo == "Entrega":
-                opcoes = {"1":"Preparando", "2":"Saiu para Entrega", "3":"Entregue", "4":"Cancelado"}
-            else:
-                opcoes = {"1":"Preparando", "2":"Pronto p/ Retirada", "3":"Finalizado", "4":"Cancelado"}
+            print(f"\n{BOLD}Novos Status:{RESET}")
+            print("1. Preparando | 2. Em trânsito/Pronto | 3. Finalizado | 4. Cancelado")
+            st_map = {"1":"Preparando", "2":"Em trânsito/Pronto", "3":"Finalizado", "4":"Cancelado"}
+            op_st = input("Escolha o novo status: ")
+            novo = st_map.get(op_st)
             
-            print(f"\n{BOLD}SELECIONE O NOVO STATUS:{RESET}")
-            for k, v in opcoes.items(): print(f"[{k}] {v}")
-            
-            st_esc = input("\nEscolha: ")
-            if st_esc in opcoes:
-                novo_st = opcoes[st_esc]
-                atualizar_status_pedido(p['id'], novo_st, f"Sistema: Pedido atualizado para {novo_st}")
-                p['status'] = novo_st 
-                print(f"{GREEN}✓ Status atualizado!{RESET}"); pausar()
-                break
+            if novo:
+                if atualizar_status_pedido(p['id'], novo, f"Sistema: Pedido alterado para {novo}"):
+                    p['status'] = novo # Atualiza no objeto local para o menu mostrar certo
+                    print(f"{GREEN}Status atualizado para {novo}!{RESET}")
+                    pausar(); break
 
-def gerar_comanda_txt(p):
-    nome_arquivo = f"comanda_{p['id'].replace('#','')}.txt"
-    try:
-        with open(nome_arquivo, "w", encoding="utf-8") as f:
-            f.write("="*30 + "\n")
-            f.write(f"      COMANDA RUSHBITE\n")
-            f.write("="*30 + "\n")
-            f.write(f"PEDIDO: {p['id']}\n")
-            f.write(f"CLIENTE: {p['cliente']}\n")
-            f.write(f"TIPO: {p['tipo_entrega']}\n")
-            f.write("-" * 30 + "\n")
-            f.write("ITENS:\n")
-            for item in p['itens']:
-                f.write(f" - {item}\n")
-            f.write("-" * 30 + "\n")
-            f.write(f"TOTAL: R$ {p['total']:.2f}\n")
-            f.write("="*30 + "\n")
-            f.write(f"Endereço: {p.get('endereco', 'N/A')}\n")
-        
-        print(f"\n{GREEN}✓ Comanda gerada: {nome_arquivo}{RESET}")
-    except Exception as e:
-        print(f"{RED}Erro ao gerar comanda: {e}{RESET}")
-    pausar()
-
-def exibir_financeiro_detalhado(nome_loja):
+def exibir_performance_ranking(nome_loja):
     pedidos = [p for p in ler_todos_pedidos() if p.get('loja') == nome_loja and p.get('status') in ["Entregue", "Finalizado"]]
-    total = sum(p.get('total', 0) for p in pedidos)
-    exibir_cabecalho("DASHBOARD FINANCEIRO")
-    print(f"💵 Faturamento Líquido: {GREEN}R$ {total:.2f}{RESET}")
-    print(f"📦 Pedidos Finalizados: {len(pedidos)}")
-    ticket = total/len(pedidos) if pedidos else 0
-    print(f"📈 Ticket Médio: R$ {ticket:.2f}")
+    
+    # Ranking de Produtos
+    contagem_itens = {}
+    # Ranking de Clientes
+    contagem_clientes = {}
+    
+    for p in pedidos:
+        # Conta produtos
+        for item in p.get('itens', []):
+            contagem_itens[item] = contagem_itens.get(item, 0) + 1
+        # Conta clientes
+        cliente = p.get('cliente', 'Desconhecido')
+        contagem_clientes[cliente] = contagem_clientes.get(cliente, 0) + 1
+
+    rank_itens = sorted(contagem_itens.items(), key=lambda x: x[1], reverse=True)
+    rank_clientes = sorted(contagem_clientes.items(), key=lambda x: x[1], reverse=True)
+
+    exibir_cabecalho("🏆 PERFORMANCE & RANKING")
+    
+    print(f"{YELLOW}🔥 LANCHES MAIS PEDIDOS:{RESET}")
+    if not rank_itens: print("  Sem dados de vendas ainda.")
+    for i, (item, qtd) in enumerate(rank_itens[:5], 1):
+        print(f"  {i}º {item:<18} | {qtd}x")
+    
+    print(f"\n{CYAN}👤 CLIENTES QUE MAIS COMPRAM:{RESET}")
+    if not rank_clientes: print("  Nenhum cliente registrado.")
+    for i, (cli, qtd) in enumerate(rank_clientes[:3], 1):
+        print(f"  {i}º {cli:<18} | {qtd} pedidos")
+        
     pausar()
+
+def exibir_financeiro_lucro(nome_loja):
+    pedidos = [p for p in ler_todos_pedidos() if p.get('loja') == nome_loja and p.get('status') in ["Entregue", "Finalizado"]]
+    
+    faturamento_bruto = sum(p.get('total', 0) for p in pedidos)
+    # Exemplo: Simulação de lucro líquido (tirando 15% de taxas/insumos, você pode mudar a lógica depois)
+    lucro_estimado = faturamento_bruto * 0.85 
+
+    exibir_cabecalho("💰 FINANCEIRO & LUCROS")
+    
+    print(f"{BOLD}Vendas Concluídas:{RESET} {len(pedidos)}")
+    print(f"{BOLD}Faturamento Bruto:{RESET} {GREEN}R$ {faturamento_bruto:.2f}{RESET}")
+    print("-" * 35)
+    print(f"{BOLD}Lucro Líquido Est.:{RESET} {CYAN}R$ {lucro_estimado:.2f}{RESET}")
+    print(f"{RED}* Descontando taxas de 15%{RESET}")
+    
+    pausar()    
 
 def gerenciar_marketing(nome_loja, dados):
-    loja = dados[nome_loja]
-    exibir_cabecalho("MARKETING: MEUS CUPONS")
-    print(f"Código Atual: {BOLD}{loja.get('cupom_id', 'NENHUM')}{RESET}")
-    print(f"Desconto: {GREEN}{loja.get('cupom_desc', 0)}%{RESET}")
-    print("\n[1] Criar/Alterar Cupom\n[2] Desativar Cupom\n[0] Voltar")
-    op = input("\nOpção: ")
-    if op == "1":
-        loja['cupom_id'] = input("Código: ").upper().strip()
-        loja['cupom_desc'] = ler_float("Desconto %: ")
-        salvar_dados(dados)
-        print(f"{GREEN}✓ Cupom ativado!{RESET}")
-    elif op == "2":
-        loja['cupom_id'] = None; loja['cupom_desc'] = 0
-        salvar_dados(dados)
-        print(f"{YELLOW}✓ Cupom desativado!{RESET}")
-    pausar()
-
-def personalizar_loja_inteligente(nome, dados):
-    l = dados[nome]
-    exibir_cabecalho("PERFIL VISUAL")
-    n_logo = input(f"Logo/Emoji atual [{l.get('logo','🍔')}]: "); l['logo'] = n_logo if n_logo else l['logo']
-    n_desc = input(f"Descrição atual [{l.get('descricao','')}]: "); l['descricao'] = n_desc if n_desc else l['descricao']
-    salvar_dados(dados); print(f"{GREEN}✓ Perfil atualizado!{RESET}"); pausar()
-
-def configurar_contato_pagamento(nome, dados):
-    l = dados[nome]
-    exibir_cabecalho("CONTATO E PAGAMENTO")
-    n_tel = input(f"Tel SAC [{l.get('telefone_suporte','N/A')}]: "); l['telefone_suporte'] = n_tel if n_tel else l['telefone_suporte']
-    n_taxa = input(f"Taxa de Entrega atual [{l.get('taxa_entrega',0)}]: ")
-    if n_taxa: l['taxa_entrega'] = float(n_taxa)
-    n_pix = input(f"Chave PIX atual [{l.get('chave_pix','N/A')}]: "); l['chave_pix'] = n_pix if n_pix else l['chave_pix']
-    salvar_dados(dados); print(f"{GREEN}✓ Configurações salvas!{RESET}"); pausar()
-
-def gerenciar_cardapio(nome, dados):
     while True:
-        exibir_cabecalho("GERENCIAR CARDÁPIO")
-        prods = dados[nome].get('produtos', {})
-        for i, (p, v) in enumerate(prods.items(), 1):
-            print(f"{i}. {p:<20} | R$ {v:>6.2f}")
+        l = dados[nome_loja]
+        exibir_cabecalho("GERENCIAMENTO DE CUPONS")
         
-        print("\n" + "-"*30)
-        print(f"{GREEN}[1] Adicionar / Editar{RESET}")
-        print(f"{RED}[2] Remover Produto{RESET}")
-        print(f"{YELLOW}[0] Voltar{RESET}")
+        # Exibe Cupons da Plataforma se for parceiro
+        if l.get('aceita_cupom_rush', False):
+            print(f"{CYAN}🎟️  CUPONS RUSHBITE (ATIVOS PELA PARCERIA):{RESET}")
+            print(f" • [BITE] - 15% OFF")
+            print(f" • [RUSH10]     - 10% OFF")
+            print("-" * 35)
+
+        # Cupom Próprio da Loja
+        cupom_id = l.get('cupom_id', 'NENHUM')
+        status_c = f"{GREEN}ATIVO{RESET}" if l.get('cupom_ativo', True) else f"{RED}INATIVO{RESET}"
+        print(f"{YELLOW}🎫 MEU CUPOM ATUAL:{RESET} {BOLD}{cupom_id}{RESET} ({status_c})")
+        print(f" Desconto: {l.get('cupom_desc', 0)}% | Limite: {l.get('cupom_limite', '∞')}")
         
-        op = input("\nEscolha: ")
-        if op == "1":
-            n = input("Nome do Item: ")
-            v = ler_float("Preço: R$ ")
-            if 'produtos' not in dados[nome]: dados[nome]['produtos'] = {}
-            dados[nome]['produtos'][n] = v
-            salvar_dados(dados)
+        print(f"\n{BOLD}[1]{RESET} Criar/Editar Cupom")
+        print(f"{BOLD}[2]{RESET} Alternar Ativar/Desativar")
+        print(f"{RED}[0] Voltar{RESET}")
+        
+        op = input(f"\n{BOLD}Ação: {RESET}")
+        
+        if op == "0": break
         elif op == "2":
-            n = input("Nome exato para deletar: ")
-            if n in prods: 
-                del dados[nome]['produtos'][n]
+            l['cupom_ativo'] = not l.get('cupom_ativo', True)
+            salvar_dados(dados)
+            print("✓ Status alterado!"); pausar()
+        elif op == "1":
+            print(f"\n{CYAN}--- NOVO CUPOM (Digite 'c' para cancelar) ---{RESET}")
+            novo_id = input("Código do Cupom: ").upper()
+            if novo_id.lower() == 'c': continue
+            
+            try:
+                desc = ler_float("Porcentagem de Desconto: ")
+                limite = input("Quantidade de usos (vazio para ilimitado): ")
+                
+                l['cupom_id'] = novo_id
+                l['cupom_desc'] = desc
+                l['cupom_limite'] = int(limite) if limite.isdigit() else "∞"
+                l['cupom_ativo'] = True
+                
                 salvar_dados(dados)
-                print(f"{GREEN}✓ Removido!{RESET}")
-        elif op == "0": break
+                print(f"{GREEN}✓ Cupom {novo_id} criado com sucesso!{RESET}"); pausar()
+            except:
+                print(f"{RED}Erro na criação. Operação cancelada.{RESET}"); pausar()
+
+def exibir_contrato_parceria(nome_loja, dados):
+    exibir_cabecalho("TERMOS DE ADESÃO: RUSHBITE PARTNER")
+    print(f"{BOLD}CONTRATO DE COOPERAÇÃO COMERCIAL{RESET}\n")
+    print("Ao ativar esta parceria, sua loja concorda em:")
+    print(f"1. {CYAN}ACEITE DE CUPONS GLOBAIS:{RESET} Permitir o uso de cupons gerados")
+    print("   pela plataforma (ex: BITE, RUSH10) em seu estabelecimento.")
+    print(f"2. {CYAN}RESPONSABILIDADE FINANCEIRA:{RESET} O valor do desconto oferecido")
+    print("   pelos cupons da plataforma será custeado integralmente pela loja.")
+    print(f"3. {CYAN}VISIBILIDADE PRIORITÁRIA:{RESET} Em troca, sua loja terá selo de")
+    print("   parceiro e prioridade nos algoritmos de busca do cliente.")
+    print(f"4. {CYAN}FIDELIDADE:{RESET} Participação automática em eventos sazonais.")
+    
+    print(f"\n{YELLOW}⚠️  IMPORTANTE: O desconto é subtraído do seu faturamento bruto.{RESET}")
+    confirma = input(f"\n{GREEN}VOCÊ ACEITA OS TERMOS? (S/N): {RESET}").lower()
+    
+    if confirma == 's':
+        dados[nome_loja]['aceita_cupom_rush'] = True
+        salvar_dados(dados)
+        print(f"\n{GREEN}✨ PARABÉNS! Agora você é um Parceiro Oficial RushBite.{RESET}")
+    else:
+        print(f"\n{RED}Adesão cancelada. Sua loja continuará no plano padrão.{RESET}")
+    pausar()    

@@ -1,6 +1,6 @@
 import os
 from src.utils import exibir_cabecalho, GREEN, RED, RESET, BOLD, YELLOW, CYAN, pausar
-from src.database import carregar_dados, carregar_clientes, salvar_clientes
+from src.database import carregar_dados, salvar_dados, carregar_clientes, salvar_clientes
 from src.telas.cliente import menu_cliente
 from src.telas.empresa import menu_empresa
 
@@ -13,14 +13,14 @@ def login():
         print("-" * 30)
         print(f"{RED}[0]{RESET} Sair do Programa")
         
-        op = input(f"\n{BOLD}Escolha sua jornada: {RESET}")
+        op = input(f"\n{BOLD}Escolha sua jornada: {RESET}").strip()
 
         if op == "1":
             clis = carregar_clientes()
             user = input("Usuário: ").strip()
             senha = input("Senha: ")
             if user in clis and clis[user]['senha'] == senha:
-                menu_cliente(user) # Chama a v0.2.6 do cliente
+                menu_cliente(user)
             else:
                 print(f"{RED}Login inválido!{RESET}"); pausar()
 
@@ -29,7 +29,7 @@ def login():
             loja = input("Nome da Loja: ").strip()
             senha = input("Senha: ")
             if loja in dados and dados[loja]['senha'] == senha:
-                menu_empresa(loja) # Chama a v0.2.6 da empresa
+                menu_empresa(loja)
             else:
                 print(f"{RED}Empresa não encontrada ou senha incorreta!{RESET}"); pausar()
 
@@ -42,7 +42,9 @@ def login():
 
 def criar_conta():
     exibir_cabecalho("CRIAR NOVA CONTA")
-    tipo = input("Você é [1] Cliente ou [2] Empresa? ")
+    print(f"[{BOLD}1{RESET}] Cliente")
+    print(f"[{BOLD}2{RESET}] Empresa")
+    tipo = input("\nEscolha o tipo de conta: ").strip()
     
     if tipo == "1":
         clis = carregar_clientes()
@@ -51,32 +53,44 @@ def criar_conta():
             print(f"{RED}Usuário já existe!{RESET}"); pausar()
         else:
             senha = input("Crie uma senha: ")
-            clis[user] = {"senha": senha, "endereco": "", "telefone": ""}
+            # Agora criamos com a chave de pontos zerada
+            clis[user] = {
+                "senha": senha, 
+                "endereco": {}, # Já inicia como dicionário para o formato novo
+                "telefone": "",
+                "pontos": 0
+            }
             salvar_clientes(clis)
             print(f"{GREEN}✓ Conta cliente criada com sucesso!{RESET}"); pausar()
             
     elif tipo == "2":
-        from src.database import salvar_dados
         dados = carregar_dados()
         loja = input("Nome da sua Loja: ").strip()
         if loja in dados:
             print(f"{RED}Essa loja já está cadastrada!{RESET}"); pausar()
         else:
             senha = input("Crie uma senha: ")
+            # Inicializa a loja com TODAS as funções da v0.2.8
             dados[loja] = {
                 "senha": senha, 
-                "produtos": {}, 
+                "produtos": {},
+                "estoque": {},
                 "logo": "🍔", 
                 "descricao": "Nova loja no RushBite",
                 "taxa_entrega": 5.0,
-                "aceita_cupom_rush": True
+                "aberta": True,           # Status de funcionamento
+                "aceita_cupom_rush": False, # Começa como False até assinar o contrato
+                "cupom_id": "",
+                "cupom_desc": 0,
+                "cupom_ativo": False
             }
             salvar_dados(dados)
             print(f"{GREEN}✓ Empresa cadastrada com sucesso!{RESET}"); pausar()
 
 if __name__ == "__main__":
-    # Garante que as pastas e arquivos existam antes de começar
+    # Verifica integridade das pastas
     if not os.path.exists("src/telas"):
-        print(f"{RED}Erro crítico: Pasta 'src/telas' não encontrada!{RESET}")
-    else:
-        login()
+        os.makedirs("src/telas", exist_ok=True)
+        print(f"{YELLOW}Aviso: Pastas de telas criadas agora.{RESET}")
+    
+    login()

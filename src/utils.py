@@ -1,33 +1,27 @@
 import os
 
-# Cores para o Terminal (ANSI Escape Codes)
+# CORES ANSI
 GREEN = "\033[92m"
 RED = "\033[91m"
 YELLOW = "\033[93m"
-CYAN = "\033[96m"  # <--- A COR QUE ESTAVA FALTANDO!
+CYAN = "\033[96m"
+WHITE = "\033[97m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 
-def limpar_console():
-    """Limpa a tela do terminal dependendo do Sistema Operacional."""
+def exibir_cabecalho(texto):
     os.system('cls' if os.name == 'nt' else 'clear')
-
-def exibir_cabecalho(titulo):
-    """Cria um cabeçalho padronizado e limpo."""
-    limpar_console()
-    print(f"{CYAN}=" * 45 + f"{RESET}")
-    print(f"{BOLD}{titulo.upper().center(45)}{RESET}")
-    print(f"{CYAN}=" * 45 + f"{RESET}\n")
+    linha = "═" * (len(texto) + 4)
+    print(f"{CYAN}╔{linha}╗{RESET}")
+    print(f"{CYAN}║{RESET}  {BOLD}{texto.upper()}{RESET}  {CYAN}║{RESET}")
+    print(f"{CYAN}╚{linha}╝{RESET}\n")
 
 def pausar():
-    """Faz o sistema esperar o usuário ler a informação."""
     input(f"\n{YELLOW}Pressione Enter para continuar...{RESET}")
 
-def ler_float(mensagem):
-    """Lê um número decimal com segurança, aceitando vírgula ou ponto."""
+def ler_float(label):
     while True:
-        entrada = input(mensagem).replace(',', '.')
         try:
-            return float(entrada)
+            return float(input(label))
         except ValueError:
-            print(f"{RED}Erro! Digite um valor numérico válido.{RESET}")
+            print(f"{RED}Erro! Digite um valor numérico (ex: 15.50){RESET}")

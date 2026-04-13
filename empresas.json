@@ -3,12 +3,19 @@
         "categoria": "Hambuguers",
         "senha": "testrb",
         "produtos": {
-            "Cheese": 35.99,
-            "Supreme Chicken": 49.99,
-            "O REI": 30.0,
-            "Suco Da Casa": 19.99,
-            "Coca-Cola 350ml": 8.0,
-            "batata fritas": 20.0
+            "Geral": {
+                "Cheese": 35.99,
+                "Supreme Chicken": 49.99,
+                "O REI": 30.0
+            },
+            "Bebidas": {
+                "Coca-Cola 350ml": 8.0,
+                "Suco da Casa": 16.0
+            },
+            "Fritas": {
+                "Batata Frita (G)": 17.99,
+                "Batata Frita (P)": 14.99
+            }
         },
         "taxa_entrega": 4.99,
         "chave_pix": "25962986208",
@@ -18,6 +25,10 @@
         "telefone_suporte": "21948484934",
         "aceita_cupom_rush": true,
         "cupom_id": "HIVE",
-        "cupom_desc": 20.0
+        "cupom_desc": 20.0,
+        "cupom_ativo": true,
+        "cupom_limite": 20,
+        "aberta": true,
+        "estoque": {}
     }
 }

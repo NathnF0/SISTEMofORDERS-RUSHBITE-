@@ -1,12 +1,23 @@
 {
     "Lucas Henrique": {
         "senha": "123",
-        "endereco": "Rua jardim anapolis, 67 lote 19 quadra C, Parque Columbia",
-        "telefone": "66 98239303"
+        "endereco": {
+            "rua": "Rua Jardim Anapolis",
+            "numero": "67, lote 19, quadra c",
+            "bairro": "Parque Eudorado",
+            "complemento": ""
+        },
+        "telefone": "6613783184"
     },
     "Estefani": {
         "senha": "Etf",
-        "endereco": "Rua Desembargador, nº122, Jardim bonito, (No apartamento CLAUDE)",
-        "telefone": "219349830"
-        }
+        "endereco": {
+            "rua": "Rua Desembargador",
+            "numero": "122",
+            "bairro": "Jardim Bonito",
+            "complemento": "No apartamento CLAUDE"
+        },
+        "telefone": "219838273",
+        "pontos": 37
+    }
 }

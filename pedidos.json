@@ -138,5 +138,31 @@
             "Sistema: Pedido atualizado para Entregue",
             "Cliente avaliou com 5⭐"
         ]
+    },
+    {
+        "id": "#GA4K",
+        "cliente": "Estefani",
+        "data": "10:55",
+        "loja": "TestHive",
+        "itens": [
+            "Cheese",
+            "Supreme Chicken",
+            "O REI",
+            "Coca-Cola 350ml"
+        ],
+        "total": 375.9246,
+        "tipo_entrega": "Entrega",
+        "endereco": {
+            "rua": "Rua Desembargador",
+            "numero": "122",
+            "bairro": "Jardim Bonito",
+            "complemento": "No apartamento CLAUDE"
+        },
+        "status": "Cancelado",
+        "notificado": true,
+        "historico_chat": [
+            "Sistema: Pedido enviado!",
+            "Sistema: Pedido alterado para Cancelado"
+        ]
     }
 ]
