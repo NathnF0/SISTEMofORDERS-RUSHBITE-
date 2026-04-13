@@ -85,6 +85,4 @@ Abra um Pull Request.
 📜 Licença
 Distribuído sob a licença MIT. Veja LICENSE para mais informações.
 
-<p align="center">
-Desenvolvido com ☕ e 🐍 por <strong>Nathn</strong>
-</p>
+Desenvolvido com ☕ e 🐍 por Nathn
