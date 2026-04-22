@@ -7,6 +7,35 @@ ARQUIVO_EMPRESAS = "empresas.json"
 ARQUIVO_PEDIDOS = "pedidos.json"
 ARQUIVO_CLIENTES = "clientes.json"
 
+import json
+import os
+
+CAMINHO_CONFIG = "database/config.json" # Caminho dentro da sua pasta de dados
+
+def carregar_config_loja():
+    # Se o arquivo não existir, cria o padrão
+    if not os.path.exists(CAMINHO_CONFIG):
+        config_padrao = {
+            "nome": "RushBite Burger",
+            "logo": "🚀🥊🍔",
+            "descricao": "O nocaute de sabor no seu paladar!",
+            "taxa_entrega": 7.00,
+            "horario_abertura": "18:00",
+            "horario_fechamento": "23:30",
+            "loja_aberta": True,
+            "estoque_ativo": True
+        }
+        salvar_config_loja(config_padrao)
+        return config_padrao
+    
+    with open(CAMINHO_CONFIG, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def salvar_config_loja(config):
+    with open(CAMINHO_CONFIG, 'w', encoding='utf-8') as f:
+        json.dump(config, f, indent=4, ensure_ascii=False)
+
+
 def gerar_id_pedido():
     return "#" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
 
@@ -64,3 +93,14 @@ def atualizar_status_pedido(id_pedido, novo_status, mensagem_chat=None):
         with open(ARQUIVO_PEDIDOS, "w", encoding="utf-8") as f:
             json.dump(pedidos, f, indent=4, ensure_ascii=False)
     return foi_atualizado
+
+def obter_status_nivel(xp):
+    """Retorna o nome do nível e o multiplicador de desconto com base no XP."""
+    if xp >= 500:
+        return "🏆 RUSH MASTER", 0.15  # 15% de desconto
+    elif xp >= 200:
+        return "🥇 OURO", 0.10         # 10% de desconto
+    elif xp >= 50:
+        return "🥈 PRATA", 0.05        # 5% de desconto
+    else:
+        return "🥉 BRONZE", 0.00       # Sem desconto extra

@@ -1,21 +1,46 @@
 import os
 from src.utils import exibir_cabecalho, GREEN, RED, RESET, BOLD, YELLOW, CYAN, pausar, ler_float
-from src.database import carregar_dados, salvar_dados, ler_todos_pedidos, atualizar_status_pedido
+from src.database import carregar_dados, salvar_dados, ler_todos_pedidos, atualizar_status_pedido, carregar_config_loja, salvar_config_loja
+import os
 
-def menu_empresa(nome_loja):
+def limpar_terminal():
+    # Se for Windows usa 'cls', se for Linux/Mac usa 'clear'
+    os.system('cls' if os.name == 'nt' else 'clear')
+def menu_empresa(loja_dados):
     while True:
+        limpar_terminal()
         dados = carregar_dados()
-        loja = dados.get(nome_loja)
-        if not loja: break
 
-        # --- NOVO: RESUMO DE STATUS NO TOPO ---
+        # Descobrimos o nome da loja, não importa se veio como texto ou dicionário
+        if isinstance(loja_dados, dict):
+            nome_loja = loja_dados.get('nome')
+        else:
+            nome_loja = loja_dados
+            
+        loja = dados.get(nome_loja)
+
+        # Se mesmo assim não carregar, vamos debugar
+        if not loja:
+            print(f"{RED}Erro: Não encontrei a loja '{nome_loja}' no banco de dados.{RESET}")
+            pausar()
+            break 
+        
+        # 3. Pega o status atualizado do arquivo
+        status_atual = loja.get('status', 'Fechado')
+        is_aberta = (status_atual == "Aberto")
+        cor_status = GREEN if is_aberta else RED
+
+        # --- RESUMO DE STATUS ---
         pedidos_todos = ler_todos_pedidos()
+        # Filtra garantindo que nome_loja é o texto (ex: "TestHive")
         pedidos_loja = [p for p in pedidos_todos if p.get('loja') == nome_loja]
+        
         pendentes = [p for p in pedidos_loja if p.get('status') == "Pendente"]
         em_preparo = [p for p in pedidos_loja if p.get('status') == "Preparando"]
 
-        exibir_cabecalho(f"PAINEL: {nome_loja.upper()}")
+        exibir_cabecalho(f"PAINEL: {str(nome_loja).upper()}")
         
+
         # Alerta visual se houver trabalho
         if pendentes:
             print(f" {RED}🔔 {len(pendentes)} PEDIDOS AGUARDANDO ACEITAÇÃO!{RESET}")
@@ -26,52 +51,82 @@ def menu_empresa(nome_loja):
         
         print("-" * 35)
 
-        # --- BLOCO 1: OPERAÇÃO ---
+# --- BLOCO 1: OPERAÇÃO ---
         status_loja = f"{GREEN}ABERTA{RESET}" if loja.get('aberta', True) else f"{RED}FECHADA{RESET}"
         print(f"{CYAN}📂 OPERAÇÃO{RESET} | Status: {status_loja}")
         print(f" [{BOLD}1{RESET}] 🍴 Cardápio & Estoque")
         print(f" [{BOLD}2{RESET}] 📦 Fila de Pedidos")
-        print(f" [{BOLD}7{RESET}] {'🔴 Fechar' if loja.get('aberta', True) else '🟢 Abrir'} Loja")
+        print(f" [{BOLD}3{RESET}] {'🔴 Fechar' if loja.get('aberta', True) else '🟢 Abrir'} Loja")
         print("-" * 35)
-        
 
         # --- BLOCO 2: INTELIGÊNCIA & LUCRO ---
         print(f"{CYAN}📊 ESTATÍSTICAS{RESET}")
-        print(f" [{BOLD}3{RESET}] 🏆 Performance & Ranking")
-        print(f" [{BOLD}4{RESET}] 💰 Financeiro (Lucros)")
+        print(f" [{BOLD}4{RESET}] 🏆 Performance & Ranking")
+        print(f" [{BOLD}5{RESET}] 💰 Financeiro (Lucros)")
         print("-" * 35)
 
-        # --- BLOCO 3: PARCERIA & MARKETING ---
+        # --- BLOCO 3: IDENTIDADE & CONFIGS ---
+        print(f"{CYAN}✨ PERSONALIZAÇÃO{RESET}")
+        print(f" [{BOLD}6{RESET}] 🛠️  Configurar Loja")
+        print(f" [{BOLD}7{RESET}] 🕒 Ajustar Horários & Relógio")
+        print("-" * 35)
+
+        # --- BLOCO 4: PARCERIA & MARKETING ---
         status_parceria = f"{GREEN}ATIVADA{RESET}" if loja.get('aceita_cupom_rush', True) else f"{RED}DESATIVADA{RESET}"
         print(f"{CYAN}🤝 RUSHBITE PARTNER{RESET}")
-        print(f" [{BOLD}5{RESET}] 🎟️  Meus Cupons")
-        print(f" [{BOLD}6{RESET}] Parceria RushBite: {status_parceria}")
+        print(f" [{BOLD}8{RESET}] 🎟️  Meus Cupons") # <--- OS CUPONS VOLTARAM!
+        print(f" [{BOLD}9{RESET}] Parceria RushBite: {status_parceria}")
         print("-" * 35)
 
         print(f" [{RED}0{RESET}] ⬅️  Sair para o Menu Principal")
         
         op = input(f"\n{BOLD}Escolha: {RESET}").strip()
         
-        if op == "1": gerenciar_cardapio(nome_loja, dados)
-        elif op == "2": gerenciar_pedidos_v2(nome_loja)
-        elif op == "3": exibir_performance_ranking(nome_loja)
-        elif op == "4": exibir_financeiro_lucro(nome_loja)
-        elif op == "5": gerenciar_marketing(nome_loja, dados)
-        elif op == "6": 
-            if not loja.get('aceita_cupom_rush', False):
-                exibir_contrato_parceria(nome_loja, dados)
-            else:
-                # Se já for parceiro, dá a opção de rescindir
-                print(f"\n{RED}Atenção: Você já é um Parceiro RushBite.{RESET}")
-                if input("Deseja rescindir o contrato e desativar cupons da plataforma? (S/N): ").lower() == 's':
-                    loja['aceita_cupom_rush'] = False
-                    salvar_dados(dados)
-                    print(f"{YELLOW}Parceria encerrada.{RESET}"); pausar()
-        elif op == "7":
-            loja['aberta'] = not loja.get('aberta', True)
+# --- LÓGICA DE EXECUÇÃO (SINCRONIZADA COM O MENU) ---
+        if op == "1": 
+            gerenciar_cardapio(nome_loja, dados)
+        
+        elif op == "2": 
+            gerenciar_pedidos_v2(nome_loja)
+        
+        elif op == "3": 
+            # Lógica invertida: Se está Aberto, vira Fechado. Se não, vira Aberto.
+            novo_status = "Fechado" if status_atual == "Aberto" else "Aberto"
+            
+            # Atualiza no dicionário principal e salva
+            dados[nome_loja]['status'] = novo_status
+            
+            # CRUCIAL: Atualiza também a chave 'aberta' para manter compatibilidade com o resto do sistema
+            dados[nome_loja]['aberta'] = (novo_status == "Aberto")
+            
             salvar_dados(dados)
-            print(f"{YELLOW}Loja {'aberta' if loja['aberta'] else 'fechada'}.{RESET}"); pausar()            
-        elif op == "0": break            
+            
+            print(f"\n{cor_status}Status alterado para: {novo_status}{RESET}")
+            pausar()
+            continue
+            
+        elif op == "4": 
+            exibir_performance_ranking(nome_loja)
+            
+        elif op == "5": 
+            exibir_financeiro_lucro(nome_loja)
+            
+        elif op == "6": 
+            menu_personalizacao_loja(nome_loja, dados)
+            
+        elif op == "7": 
+            ajustar_horarios_loja(nome_loja, dados)
+            
+        elif op == "8":
+            # Aqui você chama a função que exibe os cupons da loja
+            gerenciar_marketing(nome_loja, dados) 
+            
+        elif op == "9":
+            # Aqui chama a tela de contrato/parceria RushBite
+            gerenciar_marketing(nome_loja, dados)
+
+        elif op == "0": 
+            break
 
 def gerenciar_cardapio(nome, dados):
     while True:
@@ -176,6 +231,47 @@ def detalhar_pedido_empresa(p):
                     print(f"{GREEN}Status atualizado para {novo}!{RESET}")
                     pausar(); break
 
+def menu_personalizacao_loja(nome_loja, dados):
+    # Ajuste da gaveta (conforme o erro anterior)
+    loja = dados['lojas'][nome_loja] if 'lojas' in dados else dados[nome_loja]
+    
+    while True:
+        limpar_terminal() # Importante para atualizar o que você acabou de digitar!
+        exibir_cabecalho(f"🛠️  PERSONALIZAR: {loja.get('nome', nome_loja).upper()}")
+        
+        print(f" 1. Logo/Emoji:   {loja.get('logo', '🥗')}")
+        print(f" 2. Nome:         {loja.get('nome', nome_loja)}")
+        print(f" 3. Descrição:    {loja.get('descricao', 'Sem descrição')}")
+        print(f" 4. Taxa Entrega: R$ {loja.get('taxa_entrega', 0.0):.2f}")
+        print(f"\n [{RED}0{RESET}] Salvar e Voltar")
+
+        op = input(f"\n{BOLD}O que deseja alterar? {RESET}").strip()
+
+        if op == "1":
+            loja['logo'] = input("Novo Emoji/Logo (ex: 🥗): ")
+        elif op == "2":
+            loja['nome'] = input("Novo Nome da Loja: ")
+        elif op == "3":
+            # Aqui estava o erro: ele mudava mas não mostrava
+            nova_desc = input("Nova Descrição: ")
+            loja['descricao'] = nova_desc
+            print(f"{GREEN}Descrição atualizada internamente!{RESET}")
+        elif op == "4":
+            try:
+                valor = input("Nova Taxa (ex: 7.50): ").replace(',', '.')
+                loja['taxa_entrega'] = float(valor)
+            except:
+                print(f"{RED}Valor inválido!{RESET}"); pausar()
+        elif op == "0":
+            salvar_dados(dados) # O COMANDO MAIS IMPORTANTE
+            print(f"\n{GREEN}✅ Tudo pronto! Dados gravados no banco.{RESET}")
+            pausar()
+            break 
+        else:
+            print(f"{RED}Opção inválida!{RESET}"); pausar()
+
+
+
 def exibir_performance_ranking(nome_loja):
     pedidos = [p for p in ler_todos_pedidos() if p.get('loja') == nome_loja and p.get('status') in ["Entregue", "Finalizado"]]
     
@@ -210,21 +306,66 @@ def exibir_performance_ranking(nome_loja):
     pausar()
 
 def exibir_financeiro_lucro(nome_loja):
+    # --- 1. FILTRAGEM DOS DADOS ---
+    # Pegamos apenas pedidos dessa loja que já foram finalizados
     pedidos = [p for p in ler_todos_pedidos() if p.get('loja') == nome_loja and p.get('status') in ["Entregue", "Finalizado"]]
     
-    faturamento_bruto = sum(p.get('total', 0) for p in pedidos)
-    # Exemplo: Simulação de lucro líquido (tirando 15% de taxas/insumos, você pode mudar a lógica depois)
-    lucro_estimado = faturamento_bruto * 0.85 
+    # Filtro opcional: Se quiser ver apenas o financeiro de HOJE (comentado se quiser ver o total acumulado)
+    # hoje = datetime.now().strftime("%d/%m/%Y")
+    # pedidos = [p for p in pedidos if p.get('data') == hoje]
 
+    if not pedidos:
+        exibir_cabecalho("💰 FINANCEIRO & LUCROS")
+        print(f"{RED}Nenhuma venda finalizada para processar o financeiro.{RESET}")
+        pausar(); return
+
+    # --- 2. CÁLCULOS TÉCNICOS ---
+    faturamento_bruto = sum(p.get('total', 0) for p in pedidos)
+    qtd_pedidos = len(pedidos)
+    ticket_medio = faturamento_bruto / qtd_pedidos
+    
+    # Separação por método de pagamento (Pix, Cartão, Dinheiro)
+    pix = sum(p.get('total', 0) for p in pedidos if p.get('metodo_pagamento') == 'Pix')
+    cartao = sum(p.get('total', 0) for p in pedidos if p.get('metodo_pagamento') == 'Cartão')
+    dinheiro = sum(p.get('total', 0) for p in pedidos if p.get('metodo_pagamento') == 'Dinheiro')
+
+    # Meta Diária (Vamos deixar 500 como padrão conforme a reunião)
+    meta = 500.00
+    progresso = (faturamento_bruto / meta) * 100
+    if progresso > 100: progresso = 100 # Trava visual da barra
+
+    # --- 3. INTERFACE "BATER O OLHO E ENTENDER" ---
     exibir_cabecalho("💰 FINANCEIRO & LUCROS")
     
-    print(f"{BOLD}Vendas Concluídas:{RESET} {len(pedidos)}")
-    print(f"{BOLD}Faturamento Bruto:{RESET} {GREEN}R$ {faturamento_bruto:.2f}{RESET}")
+    print(f"📊 {BOLD}RESUMO GERAL{RESET}")
+    print(f"Vendas Concluídas: {BOLD}{qtd_pedidos}{RESET}")
+    print(f"Faturamento Bruto: {GREEN}R$ {faturamento_bruto:.2f}{RESET}")
+    print(f"Ticket Médio:      {CYAN}R$ {ticket_medio:.2f}{RESET}")
     print("-" * 35)
-    print(f"{BOLD}Lucro Líquido Est.:{RESET} {CYAN}R$ {lucro_estimado:.2f}{RESET}")
-    print(f"{RED}* Descontando taxas de 15%{RESET}")
     
-    pausar()    
+    print(f"💳 {BOLD}ENTRADAS POR TIPO{RESET}")
+    print(f"📱 Pix:      R$ {pix:.2f}")
+    print(f"💳 Cartão:   R$ {cartao:.2f}")
+    print(f"💵 Dinheiro: R$ {dinheiro:.2f}")
+    print("-" * 35)
+
+    # --- 4. BARRA DE META (O DIFERENCIAL) ---
+    print(f"🎯 {BOLD}META DIÁRIA (R$ {meta:.2f}){RESET}")
+    blocos = int(progresso // 10)
+    barra = "█" * blocos + "░" * (10 - blocos)
+    
+    cor_meta = GREEN if faturamento_bruto >= meta else YELLOW
+    print(f"{cor_meta}[{barra}] {progresso:.1f}%{RESET}")
+    
+    if faturamento_bruto >= meta:
+        print(f"\n{GREEN}{BOLD}🔥 EXCELENTE! META BATIDA.{RESET}")
+    
+    # Simulação de lucro líquido (15% de taxas conforme você tinha)
+    lucro_estimado = faturamento_bruto * 0.85
+    print(f"\n{BOLD}Lucro Estimado (Líquido):{RESET} {GREEN}R$ {lucro_estimado:.2f}{RESET}")
+    print(f"{RED}* Descontando taxas de 15% (Insumos/App){RESET}")
+    
+    pausar()
 
 def gerenciar_marketing(nome_loja, dados):
     while True:
@@ -296,3 +437,43 @@ def exibir_contrato_parceria(nome_loja, dados):
     else:
         print(f"\n{RED}Adesão cancelada. Sua loja continuará no plano padrão.{RESET}")
     pausar()    
+
+def ajustar_horarios_loja(nome_loja, dados):
+    # Vacina contra o KeyError: se não achar 'lojas', busca na raiz
+    loja = dados['lojas'][nome_loja] if 'lojas' in dados else dados[nome_loja]
+    
+    while True:
+        limpar_terminal()
+        exibir_cabecalho("🕒 CONFIGURAÇÃO DE HORÁRIOS")
+        
+        # Mostra o que está salvo atualmente
+        abertura_atual = loja.get('horario_abertura', '18:00')
+        fechamento_atual = loja.get('horario_fechamento', '23:00')
+        
+        print(f" Horário Atual: {BOLD}{abertura_atual} às {fechamento_atual}{RESET}")
+        print("-" * 35)
+        print(" [1] Alterar Horário de Abertura")
+        print(" [2] Alterar Horário de Fechamento")
+        print(f"\n [{RED}0{RESET}] Salvar e Voltar")
+        
+        op = input(f"\n{BOLD}Escolha: {RESET}").strip()
+        
+        if op == "1":
+            nova = input("Nova abertura (ex: 18:00): ").strip()
+            if ":" in nova:
+                loja['horario_abertura'] = nova
+            else:
+                print(f"{RED}Formato inválido!{RESET}"); pausar()
+                
+        elif op == "2":
+            novo = input("Novo fechamento (ex: 23:30): ").strip()
+            if ":" in novo:
+                loja['horario_fechamento'] = novo
+            else:
+                print(f"{RED}Formato inválido!{RESET}"); pausar()
+                
+        elif op == "0":
+            salvar_dados(dados) # Salva no banco de dados
+            print(f"\n{GREEN}✅ Horários atualizados e salvos!{RESET}")
+            pausar()
+            break

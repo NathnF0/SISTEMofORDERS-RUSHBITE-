@@ -164,5 +164,22 @@
             "Sistema: Pedido enviado!",
             "Sistema: Pedido alterado para Cancelado"
         ]
+    },
+    {
+        "id": "##RW3M",
+        "cliente": "Lucas Henrique",
+        "loja": "TestHive",
+        "data": "22/04/2026 09:53",
+        "itens": [
+            "Cheese",
+            "O REI"
+        ],
+        "total": 65.99000000000001,
+        "status": "Em trânsito/Pronto",
+        "historico_chat": [
+            "Sistema: Pedido realizado em TestHive",
+            "Sistema: Pedido alterado para Em trânsito/Pronto"
+        ],
+        "notificado": false
     }
 ]

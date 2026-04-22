@@ -1,9 +1,27 @@
 import os
 from src.utils import exibir_cabecalho, GREEN, RED, RESET, BOLD, YELLOW, CYAN, pausar
-from src.database import carregar_dados, salvar_dados, carregar_clientes, salvar_clientes
+from src.database import carregar_dados, salvar_dados, carregar_clientes, salvar_clientes, carregar_config_loja
 from src.telas.cliente import menu_cliente
 from src.telas.empresa import menu_empresa
+from datetime import datetime
 
+def esta_no_horario_comercial(nome_loja, dados):
+    # Em vez de carregar_config_loja(), pegamos direto dos dados que já temos
+    loja = dados['lojas'][nome_loja]
+    
+    if not loja.get('aberta', True):
+        return False, "A loja foi fechada manualmente pelo administrador."
+
+    agora = datetime.now().time()
+    # Pega o horário da loja ou usa um padrão caso esteja vazio
+    abertura = datetime.strptime(loja.get('horario_abertura', '18:00'), "%H:%M").time()
+    fechamento = datetime.strptime(loja.get('horario_fechamento', '23:00'), "%H:%M").time()
+
+    if abertura <= agora <= fechamento:
+        return True, "Ok"
+    else:
+        return False, f"Loja Fechada! Nosso horário: {loja.get('horario_abertura', '18:00')} às {loja.get('horario_fechamento', '23:00')}"
+     
 def login():
     while True:
         exibir_cabecalho("BEM-VINDO AO RUSHBITE")
@@ -17,19 +35,27 @@ def login():
 
         if op == "1":
             clis = carregar_clientes()
-            user = input("Usuário: ").strip()
+            login_digitado = input("Usuário: ").strip() 
             senha = input("Senha: ")
-            if user in clis and clis[user]['senha'] == senha:
-                menu_cliente(user)
+            
+            if login_digitado in clis and clis[login_digitado]['senha'] == senha:
+                # Pegamos o dicionário de dados do cliente
+                user_logado = clis[login_digitado]
+                user_logado['nome'] = login_digitado 
+                
+                menu_cliente(user_logado) 
             else:
                 print(f"{RED}Login inválido!{RESET}"); pausar()
 
         elif op == "2":
             dados = carregar_dados()
-            loja = input("Nome da Loja: ").strip()
+            loja_nome = input("Nome da Loja: ").strip()
             senha = input("Senha: ")
-            if loja in dados and dados[loja]['senha'] == senha:
-                menu_empresa(loja)
+            if loja_nome in dados and dados[loja_nome]['senha'] == senha:
+                # Criamos o dicionário completo e injetamos o nome nele
+                loja_dados = dados[loja_nome]
+                loja_dados['nome'] = loja_nome  
+                menu_empresa(loja_dados)
             else:
                 print(f"{RED}Empresa não encontrada ou senha incorreta!{RESET}"); pausar()
 
@@ -55,10 +81,12 @@ def criar_conta():
             senha = input("Crie uma senha: ")
             # Agora criamos com a chave de pontos zerada
             clis[user] = {
-                "senha": senha, 
-                "endereco": {}, # Já inicia como dicionário para o formato novo
-                "telefone": "",
-                "pontos": 0
+             "senha": senha, 
+             "endereco": {}, 
+             "telefone": "", 
+             "pontos": 0,
+             "xp": 0,         
+             "level": "Bronze" # Bronze, Prata, Ouro, Rush
             }
             salvar_clientes(clis)
             print(f"{GREEN}✓ Conta cliente criada com sucesso!{RESET}"); pausar()
@@ -94,3 +122,4 @@ if __name__ == "__main__":
         print(f"{YELLOW}Aviso: Pastas de telas criadas agora.{RESET}")
     
     login()
+

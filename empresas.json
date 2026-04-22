@@ -20,7 +20,7 @@
         "taxa_entrega": 4.99,
         "chave_pix": "25962986208",
         "logo": "🍔🍔",
-        "descricao": "Loja (teste) Hambuguers quentinhos, Prontos para chegar ate você em um instante!",
+        "descricao": "TestHive Hamburgueria. Laboratório de sabores extremos e suculência máxima. 🧪🔥",
         "horario": "17h às 00h",
         "telefone_suporte": "21948484934",
         "aceita_cupom_rush": true,
@@ -29,6 +29,43 @@
         "cupom_ativo": true,
         "cupom_limite": 20,
         "aberta": true,
-        "estoque": {}
+        "estoque": {},
+        "status": "Aberto"
+    },
+    "TestFit": {
+        "senha": "1234",
+        "produtos": {
+            "Saudável": {
+                "Leve & Pronto": 25.0,
+                "Salada Express": 20.0,
+                "Verde no Prato": 30.0,
+                "Raiz Sabor": 19.99,
+                "Planta no Prato": 34.99
+            },
+            "Bebidas": {
+                "Suco Verde": 15.0,
+                "Drink da Natureza": 28.99
+            }
+        },
+        "estoque": {
+            "Leve & Pronto": "∞",
+            "Salada Express": "∞",
+            "Verde no Prato": "∞",
+            "Raiz Sabor": "∞",
+            "Planta no Prato": "∞",
+            "Suco Verde": "∞",
+            "Drink da Natureza": "∞"
+        },
+        "logo": "🥦",
+        "descricao": "Comida de verdade para quem não para. Nutrição levada a sério. 🍏🥊",
+        "taxa_entrega": 5.0,
+        "aberta": true,
+        "aceita_cupom_rush": false,
+        "cupom_id": "VERDE",
+        "cupom_desc": 10.0,
+        "cupom_ativo": true,
+        "cupom_limite": 15,
+        "horario_abertura": "17:00",
+        "horario_fechamento": "00:00"
     }
 }
